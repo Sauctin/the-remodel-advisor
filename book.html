@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Book a Consultation | The Remodel Advisor</title>
+  <meta name="description" content="Book and pay for an Estimate Review, Material Selection, or Renovation Consultation online. In person across Greater Cincinnati or by video.">
+  <link rel="canonical" href="https://the-remodel-advisor.netlify.app/book.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="The Remodel Advisor">
+  <meta property="og:title" content="Book a Consultation | The Remodel Advisor">
+  <meta property="og:description" content="Pick a session and a time. Pay securely when you book.">
+  <meta property="og:url" content="https://the-remodel-advisor.netlify.app/book.html">
+  <meta property="og:image" content="https://the-remodel-advisor.netlify.app/assets/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#1e3b33">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="book">
+  <div id="site-header"></div>
+  <script src="js/components.js"></script>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="container">
+        <p class="eyebrow">Book a consultation</p>
+        <h1>Pick a session and a time that works for you.</h1>
+        <p class="lede">You'll pay securely when you book. Afterward, send your estimates, photos, or plans so we can make the most of your time together.</p>
+      </div>
+    </section>
+
+    <section class="section section--tight">
+      <div class="container book-layout">
+        <div class="picker" role="radiogroup" aria-labelledby="picker-title">
+          <p class="picker__title" id="picker-title">1 · Choose a service</p>
+          <div id="picker-options"></div>
+          <div class="picker__note"><span data-icon="upload"></span><span>Booking an Estimate Review? After you book, <a href="documents.html?service=estimate-review">upload your estimate here</a>.</span></div>
+          <div class="picker__note"><span data-icon="phone"></span><span>Prefer to talk first? Call or text <a href="tel:+15134091625">(513) 409-1625</a>.</span></div>
+        </div>
+
+        <div class="scheduler" aria-live="polite">
+          <div class="scheduler__head">
+            <h2 id="sched-title">2 · Pick a time</h2>
+            <span id="sched-meta"></span>
+          </div>
+          <div id="sched-body"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script>
+    (function () {
+      const { SITE, SERVICES } = window.TRA;
+      const opts = document.getElementById("picker-options");
+      const body = document.getElementById("sched-body");
+      const meta = document.getElementById("sched-meta");
+      const title = document.getElementById("sched-title");
+
+      opts.style.display = "grid";
+      opts.style.gap = "12px";
+      opts.innerHTML = SERVICES.map((s) => `
+        <label class="pick">
+          <input type="radio" name="service" value="${s.id}">
+          <span class="pick__dot" aria-hidden="true"></span>
+          <span><span class="pick__name">${s.name}</span><span class="pick__len">${s.length}</span></span>
+          <span class="pick__price">$${s.price}</span>
+        </label>`).join("");
+
+      function render(id) {
+        const s = SERVICES.find((x) => x.id === id) || SERVICES[0];
+        const radio = opts.querySelector(`input[value="${s.id}"]`);
+        if (radio) radio.checked = true;
+        title.textContent = "2 · Pick a time for " + s.name;
+        meta.textContent = s.length + " · $" + s.price;
+        const url = SITE.booking[s.id];
+        if (url) {
+          body.innerHTML = `<iframe src="${url}" title="Book ${s.name}" loading="lazy"></iframe>`;
+        } else {
+          body.innerHTML = `
+            <div class="ph" role="img" aria-label="Scheduler placeholder">
+              <div class="ph__inner" style="max-width:460px">
+                <span class="ph__tag">Scheduler goes here</span>
+                <p class="ph__text">The online scheduler for <strong>${s.name}</strong> (${s.length}, $${s.price}) will appear here, showing open times and taking payment at booking.</p>
+                <div class="mock-cal" aria-hidden="true">
+                  <div class="mock-cal__row" style="width:40%"></div>
+                  <div class="mock-cal__grid">${Array.from({ length: 28 }, (_, i) =>
+                    `<span class="${i === 17 ? "sel" : [3, 4, 9, 10, 11, 16, 18, 23, 24, 25].includes(i) ? "on" : ""}"></span>`).join("")}</div>
+                </div>
+              </div>
+            </div>`;
+        }
+      }
+
+      opts.addEventListener("change", (e) => {
+        if (e.target.name === "service") {
+          history.replaceState(null, "", "#" + e.target.value);
+          render(e.target.value);
+        }
+      });
+      window.addEventListener("hashchange", () => render(location.hash.slice(1)));
+      render(location.hash.slice(1));
+    })();
+  </script>
+</body>
+</html>

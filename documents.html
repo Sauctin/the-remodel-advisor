@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Send Your Documents | The Remodel Advisor</title>
+  <meta name="description" content="Upload contractor estimates, photos, and plans before your consultation with The Remodel Advisor.">
+  <link rel="canonical" href="https://the-remodel-advisor.netlify.app/documents.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="The Remodel Advisor">
+  <meta property="og:title" content="Send Your Documents | The Remodel Advisor">
+  <meta property="og:description" content="Upload estimates, photos, and plans ahead of your session.">
+  <meta property="og:url" content="https://the-remodel-advisor.netlify.app/documents.html">
+  <meta property="og:image" content="https://the-remodel-advisor.netlify.app/assets/img/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#1e3b33">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="documents">
+  <div id="site-header"></div>
+  <script src="js/components.js"></script>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="container">
+        <p class="eyebrow">Send your documents</p>
+        <h1>Share your estimates, photos, and plans.</h1>
+        <p class="lede">Sending everything ahead of time means your session is spent on answers, not catching up. Upload what you have. It doesn't need to be organized.</p>
+      </div>
+    </section>
+
+    <section class="section section--tight">
+      <div class="container with-aside">
+        <div class="form-card">
+          <form id="docs-form" name="project-documents" method="POST" action="documents-thanks.html"
+                enctype="multipart/form-data" data-netlify="true" netlify-honeypot="company_website" novalidate>
+            <input type="hidden" name="form-name" value="project-documents">
+            <p class="visually-hidden"><label>Leave this empty: <input name="company_website" tabindex="-1" autocomplete="off"></label></p>
+
+            <div class="form-grid">
+              <p class="form-section-title">About you</p>
+              <div class="field">
+                <label for="f-name">Full name <span class="req" aria-hidden="true">*</span></label>
+                <input id="f-name" type="text" name="name" autocomplete="name" required>
+              </div>
+              <div class="field">
+                <label for="f-email">Email <span class="req" aria-hidden="true">*</span></label>
+                <input id="f-email" type="email" name="email" autocomplete="email" required>
+              </div>
+              <div class="field">
+                <label for="f-phone">Phone</label>
+                <input id="f-phone" type="tel" name="phone" autocomplete="tel">
+              </div>
+              <div class="field">
+                <label for="f-zip">Project ZIP code</label>
+                <input id="f-zip" type="text" name="zip" inputmode="numeric" autocomplete="postal-code" maxlength="10">
+              </div>
+
+              <p class="form-section-title">Your session</p>
+              <div class="field">
+                <label for="f-service">Service <span class="req" aria-hidden="true">*</span></label>
+                <select id="f-service" name="service" required>
+                  <option value="">Choose one…</option>
+                  <option value="estimate-review">Estimate Review</option>
+                  <option value="material-selection">Material Selection</option>
+                  <option value="renovation-consultation">Renovation Consultation</option>
+                  <option value="not-booked-yet">Haven't booked yet</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="f-date">Session date</label>
+                <input id="f-date" type="date" name="session_date">
+              </div>
+              <div class="field full">
+                <label for="f-notes">Tell me about the project</label>
+                <p class="hint" id="f-notes-hint">What are you working on, and what would you most like help with?</p>
+                <textarea id="f-notes" name="project_notes" aria-describedby="f-notes-hint"></textarea>
+              </div>
+
+              <p class="form-section-title">Files</p>
+              <p class="hint full" style="margin:0">PDFs, photos, or screenshots. Up to 8&nbsp;MB total. Larger files? Mention it above and we'll share a link.</p>
+              <div class="field">
+                <span class="visually-hidden" id="l-file1">Estimate or main document</span>
+                <div class="drop">
+                  <span data-icon="doc"></span>
+                  <span class="drop__title">Estimate / bid #1</span>
+                  <span class="drop__sub">Click or drag a file</span>
+                  <span class="drop__file" aria-live="polite"></span>
+                  <input type="file" name="file_1" aria-labelledby="l-file1" accept=".pdf,.jpg,.jpeg,.png,.heic,.webp,.doc,.docx,.xls,.xlsx">
+                </div>
+              </div>
+              <div class="field">
+                <span class="visually-hidden" id="l-file2">Second estimate or document</span>
+                <div class="drop">
+                  <span data-icon="doc"></span>
+                  <span class="drop__title">Estimate / bid #2</span>
+                  <span class="drop__sub">Optional, for comparing bids</span>
+                  <span class="drop__file" aria-live="polite"></span>
+                  <input type="file" name="file_2" aria-labelledby="l-file2" accept=".pdf,.jpg,.jpeg,.png,.heic,.webp,.doc,.docx,.xls,.xlsx">
+                </div>
+              </div>
+              <div class="field">
+                <span class="visually-hidden" id="l-file3">Photo of the space</span>
+                <div class="drop">
+                  <span data-icon="image"></span>
+                  <span class="drop__title">Photo of the space</span>
+                  <span class="drop__sub">Optional</span>
+                  <span class="drop__file" aria-live="polite"></span>
+                  <input type="file" name="file_3" aria-labelledby="l-file3" accept="image/*,.pdf">
+                </div>
+              </div>
+              <div class="field">
+                <span class="visually-hidden" id="l-file4">Plans, drawings, or other</span>
+                <div class="drop">
+                  <span data-icon="layers"></span>
+                  <span class="drop__title">Plans or other</span>
+                  <span class="drop__sub">Optional</span>
+                  <span class="drop__file" aria-live="polite"></span>
+                  <input type="file" name="file_4" aria-labelledby="l-file4" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
+                </div>
+              </div>
+
+              <div class="full">
+                <label class="consent"><input type="checkbox" name="consent" value="yes" required>
+                  <span>I have the right to share these files, and I agree to the <a href="terms.html" target="_blank">Terms</a> and <a href="privacy.html" target="_blank">Privacy Policy</a>. <span class="req" aria-hidden="true">*</span></span>
+                </label>
+              </div>
+              <p class="form-error full" id="form-error" role="alert"></p>
+              <div class="full">
+                <button class="btn btn--block" type="submit">Send documents <span data-icon="upload"></span></button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <aside>
+          <div class="aside-card">
+            <h2>What's helpful to send</h2>
+            <ul>
+              <li><span class="check" data-icon="check"></span>Every estimate or proposal you've received</li>
+              <li><span class="check" data-icon="check"></span>A few wide photos of the space</li>
+              <li><span class="check" data-icon="check"></span>Plans, drawings, or rough measurements</li>
+              <li><span class="check" data-icon="check"></span>Links to products you're considering</li>
+            </ul>
+          </div>
+          <div class="picker__note"><span data-icon="shield"></span><span>Your files are used only to prepare for your session and are never shared publicly. See the <a href="privacy.html">Privacy Policy</a>.</span></div>
+          <div class="picker__note"><span data-icon="calendar"></span><span>Haven't booked yet? <a href="book.html">Book a session</a> first, or send files now and book after.</span></div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script>
+    (function () {
+      const form = document.getElementById("docs-form");
+      const err = document.getElementById("form-error");
+      const MAX = 8 * 1024 * 1024;
+
+      // Preselect service from ?service=
+      const svc = new URLSearchParams(location.search).get("service");
+      if (svc) {
+        const sel = document.getElementById("f-service");
+        if ([...sel.options].some((o) => o.value === svc)) sel.value = svc;
+      }
+
+      // Drop zones: show filename, highlight while dragging
+      form.querySelectorAll(".drop").forEach((drop) => {
+        const input = drop.querySelector("input[type=file]");
+        const out = drop.querySelector(".drop__file");
+        input.addEventListener("change", () => {
+          const f = input.files[0];
+          out.textContent = f ? `${f.name} (${(f.size / 1048576).toFixed(1)} MB)` : "";
+        });
+        ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, () => drop.classList.add("is-drag")));
+        ["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, () => drop.classList.remove("is-drag")));
+      });
+
+      form.addEventListener("submit", (e) => {
+        err.classList.remove("is-visible");
+        let msg = "";
+        const total = [...form.querySelectorAll("input[type=file]")].reduce((n, i) => n + (i.files[0] ? i.files[0].size : 0), 0);
+        if (!form.checkValidity()) {
+          const bad = form.querySelector(":invalid");
+          msg = "Please fill in the required fields (name, email, service) and check the agreement box.";
+          if (bad) bad.focus();
+        } else if (total > MAX) {
+          msg = `Your files add up to ${(total / 1048576).toFixed(1)} MB. Please keep the total under 8 MB, or mention in your notes that you have larger files.`;
+        }
+        if (msg) {
+          e.preventDefault();
+          err.textContent = msg;
+          err.classList.add("is-visible");
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

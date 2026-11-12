@@ -1,0 +1,18 @@
+# Static site, no build step: Netlify publishes the repo root as-is.
+[build]
+  publish = "."
+
+# Preview phase: keep search engines out while the site has placeholder content.
+# Remove this block (and the Disallow in robots.txt) at launch.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"

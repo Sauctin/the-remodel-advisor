@@ -1,0 +1,5 @@
+# Preview phase: the site has placeholder content. Change to "Allow: /" at launch.
+User-agent: *
+Disallow: /
+
+Sitemap: https://the-remodel-advisor.netlify.app/sitemap.xml
