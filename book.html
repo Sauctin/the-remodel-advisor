@@ -65,7 +65,7 @@
               <h3 id="booking-selection"></h3>
               <fieldset class="field booking-location">
                 <legend>Where should we meet?</legend>
-                <label><input type="radio" name="locationType" value="CUSTOMER_LOCATION" checked> At my location in Greater Cincinnati</label>
+                <label><input type="radio" name="locationType" value="CUSTOMER_LOCATION" checked> At my location within 25 miles of ZIP code 45150</label>
                 <label><input type="radio" name="locationType" value="VIDEO_CONFERENCE"> By video call</label>
               </fieldset>
               <div id="service-address" class="form-grid booking-address">
@@ -74,6 +74,7 @@
                 <div class="field"><label for="address-city">City</label><input id="address-city" name="address-city" type="text" autocomplete="address-level2" maxlength="80" required></div>
                 <div class="field"><label for="address-state">State</label><input id="address-state" name="address-state" type="text" autocomplete="address-level1" maxlength="2" pattern="[A-Za-z]{2}" required></div>
                 <div class="field"><label for="address-zip">ZIP code</label><input id="address-zip" name="address-zip" type="text" autocomplete="postal-code" maxlength="10" pattern="[0-9]{5}(-[0-9]{4})?" required></div>
+                <p class="hint full">At-home service eligibility is estimated from your ZIP-code centroid and may need confirmation near the 25-mile boundary.</p>
               </div>
               <div class="form-grid">
                 <div class="field"><label for="customer-first-name">First name</label><input id="customer-first-name" name="givenName" type="text" autocomplete="given-name" maxlength="100" required></div>

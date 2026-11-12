@@ -37,15 +37,27 @@ test("uses the server-side service price regardless of client input", () => {
   assert.equal(result.service.priceCents, 5000);
 });
 
-test("rejects incomplete or out-of-area at-home addresses", () => {
+test("rejects incomplete or out-of-radius at-home addresses", () => {
   assert.throws(
-    () => validateRequest({ ...validRequest, address: { ...validRequest.address, state: "CA" } }),
-    (error) => error instanceof SquareError && /Greater Cincinnati/.test(error.message),
+    () => validateRequest({ ...validRequest, address: { ...validRequest.address, postalCode: "43001" } }),
+    (error) => error instanceof SquareError && /25 miles of ZIP code 45150/.test(error.message),
   );
   assert.throws(
     () => validateRequest({ ...validRequest, address: { ...validRequest.address, postalCode: "" } }),
     (error) => error instanceof SquareError && /complete service address/.test(error.message),
   );
+  assert.throws(
+    () => validateRequest({ ...validRequest, address: { ...validRequest.address, state: "CA" } }),
+    (error) => error instanceof SquareError && /25 miles of ZIP code 45150/.test(error.message),
+  );
+});
+
+test("accepts an eligible Kentucky ZIP in the service radius", () => {
+  const result = validateRequest({
+    ...validRequest,
+    address: { ...validRequest.address, city: "Covington", state: "KY", postalCode: "41011" },
+  });
+  assert.equal(result.address.administrative_district_level_1, "KY");
 });
 
 test("rejects malformed booking and payment identifiers", () => {

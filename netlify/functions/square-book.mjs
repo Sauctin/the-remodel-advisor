@@ -13,6 +13,7 @@ import {
   SQUARE_LOCATION_ID,
   SQUARE_TIME_ZONE,
 } from "../lib/square.mjs";
+import { isWithinServiceArea } from "../lib/service-area.mjs";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_PATTERN = /^\+?[0-9().\-\s]{9,24}$/;
@@ -62,8 +63,8 @@ export function validateRequest(input) {
   if (locationType === "CUSTOMER_LOCATION" && !address) {
     throw new SquareError("Enter a complete service address, including its ZIP code.", 400);
   }
-  if (address && !["OH", "KY", "IN"].includes(address.administrative_district_level_1)) {
-    throw new SquareError("At-home appointments are currently available only in the Greater Cincinnati area.", 400);
+  if (address && !isWithinServiceArea(address.postal_code, address.administrative_district_level_1)) {
+    throw new SquareError("At-home appointments are limited to within 25 miles of ZIP code 45150. If you're near the edge, call (513) 409-1625 to confirm.", 400);
   }
 
   return {

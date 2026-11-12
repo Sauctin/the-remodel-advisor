@@ -43,7 +43,9 @@ The custom booking flow uses Square's Bookings API and Web Payments SDK through 
 
 The website falls back to the existing Square-hosted service links until the on-site integration is configured. Do not enable production until Sandbox tests pass and tax treatment/service area have been confirmed. Never commit secrets, paste them into chat, or use production credentials for testing.
 
-The on-site payment endpoint charges the listed service price as-is; it does not calculate or add sales tax. Confirm taxability for the service and customer location before enabling production payments, and implement the correct tax treatment first if any tax is due.
+The on-site payment endpoint charges the listed service price as-is; it does not calculate or add sales tax. The business owner confirmed no tax is due for the current consultations; re-confirm with a tax professional for any new service or jurisdiction before changing that treatment.
+
+At-home bookings accept ZIP codes whose GeoNames postal-code centroid is within 25 miles of ZIP code 45150. This is an approximate ZIP-level boundary, not a rooftop-distance check; customers near the boundary are asked to call for confirmation. The allowlist is derived from the [GeoNames US postal-code dataset](https://download.geonames.org/export/zip/US.zip) (CC BY 4.0; see [GeoNames](https://www.geonames.org/)).
 
 ## Local preview
 
