@@ -2,4 +2,4 @@
 User-agent: *
 Disallow: /
 
-Sitemap: https://the-remodel-advisor.netlify.app/sitemap.xml
+Sitemap: https://askremodel.com/sitemap.xml

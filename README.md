@@ -1,6 +1,6 @@
 # The Remodel Advisor
 
-Static site for The Remodel Advisor, Ted's independent remodeling consulting business (Greater Cincinnati and virtual). Plain HTML/CSS/JS, no build step. Netlify publishes the repo root on every push to `main`.
+Static site for The Remodel Advisor, Ted's independent remodeling consulting business (Greater Cincinnati and virtual). Plain HTML/CSS/JS, no build step. Live at https://askremodel.com. Netlify publishes the repo root on every push to `main`.
 
 ## Structure
 
@@ -26,7 +26,7 @@ Shared pieces are filled in by JS: `<span data-icon="name">` becomes an icon, an
 - [ ] **Copy flagged `.todo`:** cancellation policy, travel radius, Ted's story, psychology background
 - [ ] **Legal:** review `terms.html` and `privacy.html`, set effective dates, name the scheduler provider
 - [ ] **Email:** set `SITE.email` once there's a working address; add it to the Netlify form notifications
-- [ ] **Domain:** when one is bought, update `canonical`/`og:url` links, `robots.txt`, and `sitemap.xml`
+- [x] **Domain:** askremodel.com (Cloudflare Registrar; A `@` → 75.2.60.5 and CNAME `www` → the-remodel-advisor.netlify.app, both DNS-only/grey cloud)
 - [ ] **Indexing:** remove the `X-Robots-Tag` block in `netlify.toml` and change `robots.txt` to allow crawling
 
 ## Local preview
