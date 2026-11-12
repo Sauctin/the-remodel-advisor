@@ -16,3 +16,10 @@
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=604800"
+
+# Send the old Netlify preview address to the real domain.
+[[redirects]]
+  from = "https://the-remodel-advisor.netlify.app/*"
+  to = "https://askremodel.com/:splat"
+  status = 301
+  force = true
