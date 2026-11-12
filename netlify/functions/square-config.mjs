@@ -7,8 +7,8 @@ import {
   SQUARE_ENVIRONMENT,
 } from "../lib/square.mjs";
 
-export default async function handler(event) {
-  if (event.httpMethod !== "GET") return methodNotAllowed("GET");
+export default async function handler(request) {
+  if (request.method !== "GET") return methodNotAllowed("GET");
   return jsonResponse(200, {
     ready: hasSquareConfig() && await isSquareConnected(),
     applicationId: appId(),

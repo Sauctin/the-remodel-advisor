@@ -15,11 +15,11 @@ const SCOPES = [
   "PAYMENTS_WRITE",
 ];
 
-export default async function handler(event) {
-  if (event.httpMethod !== "GET") return methodNotAllowed("GET");
-  if (!parseBasicAuth(event)) {
+export default async function handler(request) {
+  if (request.method !== "GET") return methodNotAllowed("GET");
+  if (!parseBasicAuth(request)) {
     const response = jsonResponse(401, { error: "Square setup authorization is required." });
-    response.headers["WWW-Authenticate"] = 'Basic realm="Square booking setup", charset="UTF-8"';
+    response.headers.set("WWW-Authenticate", 'Basic realm="Square booking setup", charset="UTF-8"');
     return response;
   }
   if (!appId() || !process.env.SQUARE_APPLICATION_SECRET || !process.env.SQUARE_OAUTH_SETUP_KEY) {
@@ -36,15 +36,14 @@ export default async function handler(event) {
   authorizeUrl.searchParams.set("scope", SCOPES.join(" "));
   authorizeUrl.searchParams.set("session", "false");
   authorizeUrl.searchParams.set("state", state);
-  authorizeUrl.searchParams.set("redirect_uri", redirectUri(event));
+  authorizeUrl.searchParams.set("redirect_uri", redirectUri(request));
 
-  return {
-    statusCode: 302,
+  return new Response(null, {
+    status: 302,
     headers: {
       Location: authorizeUrl.toString(),
       "Cache-Control": "no-store",
       "Set-Cookie": `square_oauth_state=${state}.${signature}; HttpOnly; Secure; SameSite=Lax; Path=/.netlify/functions/square-oauth-callback; Max-Age=600`,
     },
-    body: "",
-  };
+  });
 }

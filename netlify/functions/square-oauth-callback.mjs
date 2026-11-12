@@ -8,25 +8,22 @@ import {
 } from "../lib/square.mjs";
 
 function redirect(path) {
-  return {
-    statusCode: 302,
+  return new Response(null, {
+    status: 302,
     headers: {
       Location: path,
       "Cache-Control": "no-store",
       "Set-Cookie": "square_oauth_state=; HttpOnly; Secure; SameSite=Lax; Path=/.netlify/functions/square-oauth-callback; Max-Age=0",
     },
-    body: "",
-  };
+  });
 }
 
-export default async function handler(event) {
-  if (event.httpMethod !== "GET") {
-    return { ...jsonResponse(405, { error: "Method not allowed." }), headers: { Allow: "GET" } };
-  }
-  const url = new URL(event.rawUrl);
+export default async function handler(request) {
+  if (request.method !== "GET") return jsonResponse(405, { error: "Method not allowed." }, { Allow: "GET" });
+  const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
-  const cookie = (event.headers?.cookie || event.headers?.Cookie || "")
+  const cookie = (request.headers.get("cookie") || "")
     .split(";")
     .map((value) => value.trim())
     .find((value) => value.startsWith("square_oauth_state="))
@@ -54,7 +51,7 @@ export default async function handler(event) {
         client_secret: process.env.SQUARE_APPLICATION_SECRET,
         code,
         grant_type: "authorization_code",
-        redirect_uri: redirectUri(event),
+        redirect_uri: redirectUri(request),
       }),
     });
   } catch {

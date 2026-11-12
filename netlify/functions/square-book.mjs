@@ -99,14 +99,14 @@ async function cancelBooking(booking, idempotencyKey) {
   }
 }
 
-export default async function handler(event) {
-  if (event.httpMethod !== "POST") return methodNotAllowed("POST");
-  if (!isSameOrigin(event)) return jsonResponse(403, { error: "This booking request isn't allowed." });
+export default async function handler(request) {
+  if (request.method !== "POST") return methodNotAllowed("POST");
+  if (!isSameOrigin(request)) return jsonResponse(403, { error: "This booking request isn't allowed." });
 
   let booking;
   let input;
   try {
-    input = validateRequest(parseJsonBody(event));
+    input = validateRequest(await parseJsonBody(request));
     if (Date.parse(input.startAt) < Date.now() + 24 * 60 * 60 * 1000) {
       return jsonResponse(409, { error: "That time no longer meets the 24-hour booking notice. Choose another time." });
     }

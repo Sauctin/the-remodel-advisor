@@ -9,10 +9,11 @@ import {
   validIsoDate,
 } from "../lib/square.mjs";
 
-export default async function handler(event) {
-  if (event.httpMethod !== "GET") return methodNotAllowed("GET");
-  const service = SERVICES[event.queryStringParameters?.service];
-  const date = event.queryStringParameters?.date;
+export default async function handler(request) {
+  if (request.method !== "GET") return methodNotAllowed("GET");
+  const url = new URL(request.url);
+  const service = SERVICES[url.searchParams.get("service")];
+  const date = url.searchParams.get("date");
   if (!service || !validIsoDate(date)) {
     return jsonResponse(400, { error: "Choose a valid service and date." });
   }

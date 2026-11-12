@@ -41,24 +41,23 @@ export class SquareError extends Error {
 }
 
 export function jsonResponse(statusCode, body, extraHeaders = {}) {
-  return {
-    statusCode,
+  return new Response(JSON.stringify(body), {
+    status: statusCode,
     headers: {
       "Cache-Control": "no-store",
       "Content-Type": "application/json; charset=utf-8",
       "X-Content-Type-Options": "nosniff",
       ...extraHeaders,
     },
-    body: JSON.stringify(body),
-  };
+  });
 }
 
 export function methodNotAllowed(allow) {
   return jsonResponse(405, { error: "Method not allowed." }, { Allow: allow });
 }
 
-export function isSameOrigin(event) {
-  const origin = event.headers?.origin || event.headers?.Origin;
+export function isSameOrigin(request) {
+  const origin = request.headers.get("origin");
   if (!origin) return false;
   const allowed = new Set([
     process.env.PUBLIC_SITE_ORIGIN || "https://askremodel.com",
@@ -72,9 +71,9 @@ export function isSameOrigin(event) {
   return allowed.has(origin);
 }
 
-export function parseJsonBody(event) {
+export async function parseJsonBody(request) {
   try {
-    return JSON.parse(event.body || "");
+    return await request.json();
   } catch {
     throw new SquareError("The request body must be valid JSON.", 400);
   }
@@ -94,9 +93,9 @@ export function appId() {
   return process.env.SQUARE_APPLICATION_ID || "";
 }
 
-export function redirectUri(event) {
+export function redirectUri(request) {
   return process.env.SQUARE_REDIRECT_URI
-    || `${new URL(event.rawUrl).origin}/.netlify/functions/square-oauth-callback`;
+    || `${new URL(request.url).origin}/.netlify/functions/square-oauth-callback`;
 }
 
 export function createOAuthState() {
@@ -264,8 +263,8 @@ export function formatLocalDate(isoDate, timeZone = SQUARE_TIME_ZONE) {
   return `${values.year}-${values.month}-${values.day}`;
 }
 
-export function parseBasicAuth(event) {
-  const header = event.headers?.authorization || event.headers?.Authorization || "";
+export function parseBasicAuth(request) {
+  const header = request.headers.get("authorization") || "";
   const expectedKey = process.env.SQUARE_OAUTH_SETUP_KEY || "";
   if (!expectedKey || !header.startsWith("Basic ")) return false;
   let supplied;
