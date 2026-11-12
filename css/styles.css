@@ -581,8 +581,8 @@ strong { font-weight: 600; }
 
 /* ---------- About ---------- */
 .about-hero { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: clamp(32px, 6vw, 80px); align-items: center; }
-.about-hero .ph { aspect-ratio: 4 / 5; border-radius: 22px; }
-@media (max-width: 880px) { .about-hero { grid-template-columns: 1fr; } .about-hero .ph { aspect-ratio: 4 / 3.5; max-width: 520px; } }
+.about-hero__photo { display: block; width: 100%; aspect-ratio: 4 / 5; border-radius: 22px; object-fit: cover; object-position: center 35%; }
+@media (max-width: 880px) { .about-hero { grid-template-columns: 1fr; } .about-hero__photo { aspect-ratio: 4 / 5; max-width: 520px; } }
 .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 32px; border-top: 1px solid var(--line); }
 .stat { padding: 22px 16px 0 0; }
 .stat__num { font: 600 2.2rem/1 var(--font-head); color: var(--green-900); letter-spacing: -0.02em; }
