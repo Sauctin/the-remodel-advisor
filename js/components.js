@@ -19,8 +19,6 @@
     // No working email yet (theremodeladvisor.com is not owned). Leave empty to hide it.
     email: "",
     area: "Greater Cincinnati & virtual",
-    // Square Appointments booking links per service.
-    // While a link is empty, the Book page shows a placeholder for that service.
     booking: {
       "estimate-review": "https://book.squareup.com/appointments/1s4v9x6ocx649s/location/L25W68QB2RAFJ/services/ZQE4R7GQLSG7QZUCOTPICHGL",
       "material-selection": "https://book.squareup.com/appointments/1s4v9x6ocx649s/location/L25W68QB2RAFJ/services/DEZVENR2UHZBZ4ZQ44WPX7ZS",

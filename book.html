@@ -49,7 +49,46 @@
             <h2 id="sched-title">2 · Pick a time</h2>
             <span id="sched-meta"></span>
           </div>
-          <div id="sched-body"></div>
+          <div class="scheduler__content">
+            <p id="booking-status" class="booking-status" role="status" aria-live="polite">Preparing secure booking…</p>
+            <div id="booking-fallback" class="booking-fallback" hidden>
+              <p>On-site checkout is not ready yet. You can still book this service securely with Square.</p>
+              <a id="booking-fallback-link" class="btn" target="_blank" rel="noopener noreferrer">Continue to Square</a>
+            </div>
+            <div class="field booking-date">
+              <label for="booking-date">Choose a date</label>
+              <input id="booking-date" type="date" required>
+            </div>
+            <button id="find-times" class="btn btn--ghost" type="button" disabled>Find available times</button>
+            <div id="available-times" class="booking-times" aria-live="polite"></div>
+            <form id="booking-form" class="booking-form" hidden>
+              <h3 id="booking-selection"></h3>
+              <fieldset class="field booking-location">
+                <legend>Where should we meet?</legend>
+                <label><input type="radio" name="locationType" value="CUSTOMER_LOCATION" checked> At my location in Greater Cincinnati</label>
+                <label><input type="radio" name="locationType" value="VIDEO_CONFERENCE"> By video call</label>
+              </fieldset>
+              <div id="service-address" class="form-grid booking-address">
+                <div class="field full"><label for="address-line-1">Street address</label><input id="address-line-1" name="address-line-1" type="text" autocomplete="address-line1" maxlength="120" required></div>
+                <div class="field full"><label for="address-line-2">Apartment, suite, etc. <span class="hint">(optional)</span></label><input id="address-line-2" name="address-line-2" type="text" autocomplete="address-line2" maxlength="120"></div>
+                <div class="field"><label for="address-city">City</label><input id="address-city" name="address-city" type="text" autocomplete="address-level2" maxlength="80" required></div>
+                <div class="field"><label for="address-state">State</label><input id="address-state" name="address-state" type="text" autocomplete="address-level1" maxlength="2" pattern="[A-Za-z]{2}" required></div>
+                <div class="field"><label for="address-zip">ZIP code</label><input id="address-zip" name="address-zip" type="text" autocomplete="postal-code" maxlength="10" pattern="[0-9]{5}(-[0-9]{4})?" required></div>
+              </div>
+              <div class="form-grid">
+                <div class="field"><label for="customer-first-name">First name</label><input id="customer-first-name" name="givenName" type="text" autocomplete="given-name" maxlength="100" required></div>
+                <div class="field"><label for="customer-last-name">Last name</label><input id="customer-last-name" name="familyName" type="text" autocomplete="family-name" maxlength="100" required></div>
+                <div class="field"><label for="customer-email">Email</label><input id="customer-email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
+                <div class="field"><label for="customer-phone">Phone</label><input id="customer-phone" name="phone" type="tel" autocomplete="tel" maxlength="24" required></div>
+              </div>
+              <div class="field booking-card">
+                <label>Card details</label>
+                <div id="card-container"></div>
+                <p class="hint">Card details are securely collected by Square. You will be charged the full service price when you book.</p>
+              </div>
+              <button id="book-pay" class="btn" type="submit" disabled>Book and pay</button>
+            </form>
+          </div>
         </div>
       </div>
     </section>
@@ -61,9 +100,28 @@
     (function () {
       const { SITE, SERVICES } = window.TRA;
       const opts = document.getElementById("picker-options");
-      const body = document.getElementById("sched-body");
+      const status = document.getElementById("booking-status");
+      const fallback = document.getElementById("booking-fallback");
+      const fallbackLink = document.getElementById("booking-fallback-link");
+      const times = document.getElementById("available-times");
+      const dateInput = document.getElementById("booking-date");
+      const findTimesButton = document.getElementById("find-times");
+      const bookingForm = document.getElementById("booking-form");
+      const bookingSelection = document.getElementById("booking-selection");
+      const addressFields = document.getElementById("service-address");
+      const bookPayButton = document.getElementById("book-pay");
       const meta = document.getElementById("sched-meta");
       const title = document.getElementById("sched-title");
+      const locationInputs = bookingForm.querySelectorAll('input[name="locationType"]');
+      let selectedService = SERVICES[0];
+      let selectedSlot = null;
+      let squareCard = null;
+      let squarePayments = null;
+      let cardMounted = false;
+      let cardMountPromise = null;
+      let bookingPending = false;
+      let squareConfig = null;
+      let attemptKey = crypto.randomUUID();
 
       opts.style.display = "grid";
       opts.style.gap = "12px";
@@ -75,44 +133,292 @@
           <span class="pick__price">$${s.price}</span>
         </label>`).join("");
 
-      function render(id) {
-        const s = SERVICES.find((x) => x.id === id) || SERVICES[0];
-        const radio = opts.querySelector(`input[value="${s.id}"]`);
-        if (radio) radio.checked = true;
-        title.textContent = "2 · Pick a time for " + s.name;
-        meta.textContent = s.length + " · $" + s.price;
-        const url = SITE.booking[s.id];
-        if (url) {
-          body.innerHTML = `
-            <div class="scheduler__external">
-              <p>Book and pay securely for ${s.name} through Square.</p>
-              <a class="btn" href="${url}" target="_blank" rel="noopener noreferrer">Continue to Square</a>
-              <p class="scheduler__note">Square will open in a new tab to complete your booking.</p>
-            </div>`;
-        } else {
-          body.innerHTML = `
-            <div class="ph" role="img" aria-label="Scheduler placeholder">
-              <div class="ph__inner" style="max-width:460px">
-                <span class="ph__tag">Scheduler goes here</span>
-                <p class="ph__text">The online scheduler for <strong>${s.name}</strong> (${s.length}, $${s.price}) will appear here, showing open times and taking payment at booking.</p>
-                <div class="mock-cal" aria-hidden="true">
-                  <div class="mock-cal__row" style="width:40%"></div>
-                  <div class="mock-cal__grid">${Array.from({ length: 28 }, (_, i) =>
-                    `<span class="${i === 17 ? "sel" : [3, 4, 9, 10, 11, 16, 18, 23, 24, 25].includes(i) ? "on" : ""}"></span>`).join("")}</div>
-                </div>
-              </div>
-            </div>`;
+      function setStatus(message, kind = "") {
+        status.textContent = message;
+        status.className = "booking-status" + (kind ? " booking-status--" + kind : "");
+      }
+
+      function showFallback() {
+        fallbackLink.href = SITE.booking[selectedService.id];
+        fallback.hidden = false;
+        dateInput.closest(".booking-date").hidden = true;
+        findTimesButton.hidden = true;
+        times.hidden = true;
+        setStatus("On-site checkout is being prepared. You can still book this service securely with Square.");
+      }
+
+      function clearSelection() {
+        selectedSlot = null;
+        times.replaceChildren();
+        bookingForm.hidden = true;
+      }
+
+      function updateLocationFields() {
+        const inPerson = bookingForm.querySelector('input[name="locationType"]:checked').value === "CUSTOMER_LOCATION";
+        addressFields.hidden = !inPerson;
+        for (const input of addressFields.querySelectorAll("input")) {
+          input.disabled = !inPerson;
+          input.required = inPerson && input.id !== "address-line-2";
         }
+      }
+
+      async function mountCard() {
+        if (cardMounted || cardMountPromise) return cardMountPromise;
+        cardMountPromise = (async () => {
+          bookPayButton.disabled = true;
+          try {
+            squareCard = await squarePayments.card();
+            await squareCard.attach("#card-container");
+            cardMounted = true;
+            bookPayButton.disabled = false;
+          } catch {
+            squareCard = null;
+            setStatus("The secure card form couldn't be loaded. Please reload the page or call (513) 409-1625.", "error");
+            cardMountPromise = null;
+          }
+        })();
+        return cardMountPromise;
+      }
+
+      function render(id) {
+        selectedService = SERVICES.find((x) => x.id === id) || SERVICES[0];
+        const radio = opts.querySelector(`input[value="${selectedService.id}"]`);
+        if (radio) radio.checked = true;
+        title.textContent = "2 · Pick a time for " + selectedService.name;
+        meta.textContent = selectedService.length + " · $" + selectedService.price;
+        bookPayButton.textContent = "Book and pay $" + selectedService.price;
+        fallbackLink.href = SITE.booking[selectedService.id];
+        clearSelection();
       }
 
       opts.addEventListener("change", (e) => {
         if (e.target.name === "service") {
           history.replaceState(null, "", "#" + e.target.value);
           render(e.target.value);
+          setStatus(fallback.hidden
+            ? "Choose a date, then check Square for available times."
+            : "On-site checkout is being prepared. You can still book this service securely with Square.");
         }
       });
       window.addEventListener("hashchange", () => render(location.hash.slice(1)));
+      for (const input of locationInputs) input.addEventListener("change", updateLocationFields);
+      updateLocationFields();
+
+      function tomorrowLocal() {
+        const date = new Date();
+        date.setDate(date.getDate() + 1);
+        const offset = date.getTimezoneOffset() * 60000;
+        return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+      }
+      dateInput.min = tomorrowLocal();
+      dateInput.value = tomorrowLocal();
+
+      async function loadSquareSdk() {
+        if (window.Square) return;
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = squareConfig.environment === "sandbox"
+            ? "https://sandbox.web.squarecdn.com/v1/square.js"
+            : "https://web.squarecdn.com/v1/square.js";
+          script.onload = resolve;
+          script.onerror = () => reject(new Error("Square's secure payment form couldn't be loaded."));
+          document.head.append(script);
+        });
+      }
+
+      async function initializeCheckout() {
+        try {
+          const response = await fetch("/.netlify/functions/square-config", { headers: { Accept: "application/json" } });
+          if (!response.ok) {
+            showFallback();
+            return;
+          }
+          const config = await response.json();
+          if (!config.ready || !config.applicationId || !config.locationId) {
+            showFallback();
+            return;
+          }
+          squareConfig = config;
+          await loadSquareSdk();
+          squarePayments = window.Square.payments(config.applicationId, config.locationId);
+          fallback.hidden = true;
+          dateInput.closest(".booking-date").hidden = false;
+          findTimesButton.hidden = false;
+          times.hidden = false;
+          findTimesButton.disabled = false;
+          bookPayButton.disabled = true;
+          setStatus("Choose a date, then check Square for available times.");
+        } catch (error) {
+          console.error("Could not initialize on-site Square checkout", error);
+          showFallback();
+        }
+      }
+
+      findTimesButton.addEventListener("click", async () => {
+        clearSelection();
+        findTimesButton.disabled = true;
+        setStatus("Checking available times…");
+        try {
+          const query = new URLSearchParams({ service: selectedService.id, date: dateInput.value });
+          const response = await fetch(`/.netlify/functions/square-availability?${query}`, {
+            headers: { Accept: "application/json" },
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || "Couldn't load available times.");
+          if (!result.slots.length) {
+            setStatus("No times are available on that date. Choose another date and try again.");
+            return;
+          }
+          const fragment = document.createDocumentFragment();
+          for (const slot of result.slots) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "booking-time";
+            button.textContent = new Intl.DateTimeFormat("en-US", {
+              hour: "numeric",
+              minute: "2-digit",
+              timeZone: result.timeZone,
+            }).format(new Date(slot.startAt));
+            button.addEventListener("click", () => {
+              selectedSlot = slot;
+              for (const item of times.querySelectorAll(".booking-time")) item.setAttribute("aria-pressed", "false");
+              button.setAttribute("aria-pressed", "true");
+              bookingSelection.textContent = `${selectedService.name} · ${new Intl.DateTimeFormat("en-US", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+                timeZone: result.timeZone,
+              }).format(new Date(slot.startAt))}`;
+              bookingForm.hidden = false;
+              setStatus("Enter your details to reserve this time and pay securely.");
+              mountCard();
+            });
+            button.setAttribute("aria-pressed", "false");
+            fragment.append(button);
+          }
+          times.replaceChildren(fragment);
+          setStatus("Select an available time.");
+        } catch (error) {
+          setStatus(error.message || "Couldn't load available times. Please try again.", "error");
+        } finally {
+          findTimesButton.disabled = false;
+        }
+      });
+
+      dateInput.addEventListener("change", clearSelection);
+
+      bookingForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!selectedSlot || !cardMounted || !squareCard || !bookingForm.reportValidity()) return;
+        bookPayButton.disabled = true;
+        findTimesButton.disabled = true;
+        setStatus("Securing your appointment and processing payment…");
+        let bookingRequestSent = false;
+        let bookingResponseReceived = false;
+        try {
+          const data = new FormData(bookingForm);
+          const address = selectedSlot && data.get("locationType") === "CUSTOMER_LOCATION" ? {
+            line1: data.get("address-line-1"),
+            line2: data.get("address-line-2"),
+            city: data.get("address-city"),
+            state: data.get("address-state"),
+            postalCode: data.get("address-zip"),
+          } : null;
+          const verificationDetails = {
+            amount: (selectedService.price).toFixed(2),
+            currencyCode: "USD",
+            intent: "CHARGE",
+            customerInitiated: true,
+            sellerKeyedIn: false,
+            billingContact: {
+              givenName: data.get("givenName"),
+              familyName: data.get("familyName"),
+              email: data.get("email"),
+              phone: data.get("phone"),
+              ...(address ? {
+                addressLines: [address.line1, address.line2].filter(Boolean),
+                city: address.city,
+                state: address.state,
+                postalCode: address.postalCode,
+                countryCode: "US",
+              } : {}),
+            },
+          };
+          const token = await squareCard.tokenize(verificationDetails);
+          if (token.status !== "OK" || !token.token) {
+            throw new Error(token.errors?.map((item) => item.message).join(" ") || "Card details couldn't be verified. Check them and try again.");
+          }
+          bookingRequestSent = true;
+          const response = await fetch("/.netlify/functions/square-book", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({
+              serviceId: selectedService.id,
+              startAt: selectedSlot.startAt,
+              teamMemberId: selectedSlot.teamMemberId,
+              serviceVariationVersion: selectedSlot.serviceVariationVersion,
+              locationType: data.get("locationType"),
+              address,
+              givenName: data.get("givenName"),
+              familyName: data.get("familyName"),
+              email: data.get("email"),
+              phone: data.get("phone"),
+              sourceId: token.token,
+              idempotencyKey: attemptKey,
+            }),
+          });
+          const result = await response.json();
+          bookingResponseReceived = true;
+          if (!response.ok) {
+            if (result.retryable) attemptKey = crypto.randomUUID();
+            if (result.pending) {
+              bookingPending = true;
+              bookPayButton.disabled = true;
+              findTimesButton.disabled = true;
+              throw new Error(result.error || "Payment status is pending. Please call (513) 409-1625 before trying again.");
+            }
+            throw new Error(result.error || "Booking and payment could not be completed.");
+          }
+          const bookedTime = new Intl.DateTimeFormat("en-US", {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            timeZone: result.timeZone,
+          }).format(new Date(result.startAt));
+          bookingForm.hidden = true;
+          times.replaceChildren();
+          findTimesButton.hidden = true;
+          dateInput.disabled = true;
+          setStatus(`You're booked! ${result.service} is scheduled for ${bookedTime}. Your payment was successful.`, "success");
+        } catch (error) {
+          if (bookingRequestSent && !bookingResponseReceived) {
+            bookingPending = true;
+            bookPayButton.disabled = true;
+            findTimesButton.disabled = true;
+            setStatus("We couldn't confirm the booking or payment status. Don't submit again; call (513) 409-1625 so we can verify it.", "error");
+          } else {
+            setStatus(error.message || "We couldn't complete the booking. Please try again.", "error");
+          }
+        } finally {
+          if (!bookingPending && !bookPayButton.hidden && !dateInput.disabled) {
+            bookPayButton.disabled = false;
+            findTimesButton.disabled = false;
+          }
+        }
+      });
+
       render(location.hash.slice(1));
+      const squareResult = new URLSearchParams(location.search).get("square");
+      if (squareResult === "connected") {
+        setStatus("Square is connected. Secure online booking will be available shortly.");
+      } else if (squareResult && squareResult !== "connected") {
+        setStatus("Square authorization didn't finish. Please contact the site owner.", "error");
+      }
+      initializeCheckout();
     })();
   </script>
 </body>

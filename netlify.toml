@@ -1,6 +1,7 @@
 # Static site, no build step: Netlify publishes the repo root as-is.
 [build]
   publish = "."
+  functions = "netlify/functions"
 
 # Preview phase: keep search engines out while the site has placeholder content.
 # Remove this block (and the Disallow in robots.txt) at launch.
