@@ -20,11 +20,11 @@ Shared pieces are filled in by JS: `<span data-icon="name">` becomes an icon, an
 
 ## Before launch
 
-- [ ] **Scheduler:** create one booking type per service (Cal.com, Calendly, Square, etc.) and paste the links into `SITE.booking` in `js/components.js`
+- [x] **Square Appointments:** identity verification, customer-location appointments, daily 9 AM–9 PM Eastern availability, three services, 24-hour minimum booking notice, full prepayment, and the 24-hour cancellation policy are configured; prepaid appointments cannot be cancelled online, so clients must call to request cancellations. Confirm payout readiness in Square before launch.
 - [ ] **Photos:** every "Photo needed" placeholder (hero, about, services, gallery)
 - [ ] **Reviews:** replace the three "Sample review" cards on the home page with real ones, or remove the section
-- [ ] **Copy flagged `.todo`:** cancellation policy, travel radius, Ted's story, psychology background
-- [ ] **Legal:** review `terms.html` and `privacy.html`, set effective dates, name the scheduler provider
+- [ ] **Copy flagged `.todo`:** travel radius, Ted's story, psychology background
+- [ ] **Legal:** review `terms.html` and `privacy.html` and set effective dates
 - [ ] **Email:** set `SITE.email` once there's a working address; add it to the Netlify form notifications
 - [x] **Domain:** askremodel.com (Cloudflare Registrar; A `@` → 75.2.60.5 and CNAME `www` → the-remodel-advisor.netlify.app, both DNS-only/grey cloud)
 - [ ] **Indexing:** remove the `X-Robots-Tag` block in `netlify.toml` and change `robots.txt` to allow crawling
