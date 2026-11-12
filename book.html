@@ -84,8 +84,11 @@
         const url = SITE.booking[s.id];
         if (url) {
           body.innerHTML = `
-            <iframe src="${url}" title="Book ${s.name}" loading="lazy" allow="payment"></iframe>
-            <p class="scheduler__fallback"><a href="${url}" target="_blank" rel="noopener noreferrer">Open Square booking in a new tab</a> if the embedded scheduler doesn't respond.</p>`;
+            <div class="scheduler__external">
+              <p>Book and pay securely for ${s.name} through Square.</p>
+              <a class="btn" href="${url}" target="_blank" rel="noopener noreferrer">Continue to Square</a>
+              <p class="scheduler__note">Square will open in a new tab to complete your booking.</p>
+            </div>`;
         } else {
           body.innerHTML = `
             <div class="ph" role="img" aria-label="Scheduler placeholder">

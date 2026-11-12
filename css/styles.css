@@ -517,8 +517,9 @@ strong { font-weight: 600; }
 .scheduler__head { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 24px; border-bottom: 1px solid var(--line); }
 .scheduler__head h2 { font-size: 1.3rem; margin: 0; }
 .scheduler__head span { font: 500 0.82rem var(--font-mono); color: var(--ink-2); }
-.scheduler iframe { flex: 1; width: 100%; min-height: 680px; border: 0; }
-.scheduler__fallback { margin: 0; padding: 0 24px 18px; font-size: 0.9rem; }
+.scheduler__external { flex: 1; display: grid; align-content: center; justify-items: start; gap: 16px; padding: 32px; }
+.scheduler__external p { max-width: 32rem; margin: 0; }
+.scheduler__external .scheduler__note { font-size: 0.9rem; color: var(--ink-2); }
 .scheduler .ph { flex: 1; border: 0; border-radius: 0; min-height: 580px; }
 .mock-cal { width: min(420px, 100%); margin-top: 18px; padding: 18px; border-radius: 12px; background: rgb(255 253 248 / 85%); border: 1px solid rgb(30 59 51 / 15%); text-align: left; }
 .mock-cal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 10px; }
