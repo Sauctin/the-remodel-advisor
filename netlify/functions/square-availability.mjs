@@ -17,6 +17,9 @@ export function availabilityErrorResponse(error) {
     ...(error instanceof SquareError && error.codes.length
       ? { squareErrorCodes: error.codes }
       : {}),
+    ...(error instanceof SquareError && error.fields.length
+      ? { squareErrorFields: error.fields }
+      : {}),
   });
 }
 
