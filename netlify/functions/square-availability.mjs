@@ -4,10 +4,21 @@ import {
   jsonResponse,
   methodNotAllowed,
   publicError,
+  SquareError,
   SERVICES,
   SQUARE_TIME_ZONE,
   validIsoDate,
 } from "../lib/square.mjs";
+
+export function availabilityErrorResponse(error) {
+  const result = publicError(error);
+  return jsonResponse(result.statusCode, {
+    error: result.message,
+    ...(error instanceof SquareError && error.codes.length
+      ? { squareErrorCodes: error.codes }
+      : {}),
+  });
+}
 
 export default async function handler(request) {
   if (request.method !== "GET") return methodNotAllowed("GET");
@@ -43,7 +54,6 @@ export default async function handler(request) {
       .sort((a, b) => Date.parse(a.startAt) - Date.parse(b.startAt));
     return jsonResponse(200, { date, timeZone: SQUARE_TIME_ZONE, slots });
   } catch (error) {
-    const result = publicError(error);
-    return jsonResponse(result.statusCode, { error: result.message });
+    return availabilityErrorResponse(error);
   }
 }
