@@ -37,6 +37,7 @@ test("availability errors expose only Square error codes for diagnosis", async (
       ["NOT_FOUND"],
       false,
       ["query.filter.segment_filters[0].service_variation_id"],
+      ["The service variation was not found."],
     ),
     "service-variation-id",
   );
@@ -45,6 +46,7 @@ test("availability errors expose only Square error codes for diagnosis", async (
     error: "Square could not complete the request. Please try again.",
     squareErrorCodes: ["NOT_FOUND"],
     squareErrorFields: ["query.filter.segment_filters[0].service_variation_id"],
+    squareErrorDetails: ["The service variation was not found."],
     squareServiceVariationId: "service-variation-id",
   });
 });

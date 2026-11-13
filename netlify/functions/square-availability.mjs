@@ -20,6 +20,9 @@ export function availabilityErrorResponse(error, serviceVariationId) {
     ...(error instanceof SquareError && error.fields.length
       ? { squareErrorFields: error.fields }
       : {}),
+    ...(error instanceof SquareError && error.details.length
+      ? { squareErrorDetails: error.details }
+      : {}),
     ...(error instanceof SquareError ? { squareServiceVariationId: serviceVariationId } : {}),
   });
 }

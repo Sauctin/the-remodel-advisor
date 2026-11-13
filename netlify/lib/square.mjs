@@ -31,13 +31,14 @@ export const SERVICES = Object.freeze({
 });
 
 export class SquareError extends Error {
-  constructor(message, statusCode = 502, codes = [], uncertain = false, fields = []) {
+  constructor(message, statusCode = 502, codes = [], uncertain = false, fields = [], details = []) {
     super(message);
     this.name = "SquareError";
     this.statusCode = statusCode;
     this.codes = codes;
     this.uncertain = uncertain;
     this.fields = fields;
+    this.details = details;
   }
 }
 
@@ -208,6 +209,9 @@ export async function squareRequest(path, { method = "POST", body } = {}) {
     const fields = (payload.errors || [])
       .map((error) => error.field)
       .filter((field) => typeof field === "string");
+    const details = (payload.errors || [])
+      .map((error) => error.detail)
+      .filter((detail) => typeof detail === "string");
     console.error("Square API request failed", { path, status: response.status, codes, fields });
     throw new SquareError(
       "Square could not complete the request. Please try again.",
@@ -215,6 +219,7 @@ export async function squareRequest(path, { method = "POST", body } = {}) {
       codes,
       response.status >= 500,
       fields,
+      details,
     );
   }
   return payload;
