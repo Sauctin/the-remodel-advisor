@@ -24,3 +24,64 @@
   to = "https://askremodel.com/:splat"
   status = 301
   force = true
+
+# Clean URLs: /about serves about.html. Send old .html links to the clean URL.
+[[redirects]]
+  from = "/index.html"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/about.html"
+  to = "/about"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/book.html"
+  to = "/book"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/services.html"
+  to = "/services"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/documents.html"
+  to = "/documents"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/documents-thanks.html"
+  to = "/documents-thanks"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/woodworking.html"
+  to = "/woodworking"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/woodworking-thanks.html"
+  to = "/woodworking-thanks"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/terms.html"
+  to = "/terms"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/privacy.html"
+  to = "/privacy"
+  status = 301
+  force = true

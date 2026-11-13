@@ -1,7 +1,7 @@
 /* ==========================================================================
    The Remodel Advisor — shared header, footer, icons, and page behaviors
    Each page includes:
-     <body data-page="home">     (home | services | book | documents | about | terms | privacy)
+     <body data-page="home">     (home | services | book | documents | about | woodworking | terms | privacy)
      <div id="site-header"></div>
      <script src="js/components.js"></script>   (no defer; directly after the header placeholder)
      ... <div id="site-footer"></div>
@@ -60,6 +60,12 @@
     info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/>',
     compass: '<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>',
     calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    board: '<rect x="2.5" y="6" width="14.5" height="12" rx="2"/><path d="M17 10.5h3a1.5 1.5 0 0 1 0 3h-3"/><path d="M6 10h7M6 14h5"/>',
+    coaster: '<ellipse cx="12" cy="9" rx="8" ry="3"/><path d="M4 9v2.5c0 1.7 3.6 3 8 3s8-1.3 8-3V9"/><path d="M4 14.5V16c0 1.7 3.6 3 8 3s8-1.3 8-3v-1.5"/>',
+    table: '<rect x="2" y="6" width="20" height="3" rx="1"/><path d="M5 9v11M19 9v11M5 14h14"/>',
+    bench: '<rect x="3" y="8" width="18" height="3" rx="1"/><path d="m6 11-1.5 9M18 11l1.5 9M5.5 16h13"/>',
+    shelf: '<path d="M3 10h18M3 18h18"/><path d="M6 10V5h2.5v5M10.5 10V6.5H13V10M15.5 10 17 5.5l2.3.8L18 10M7 18v-4h5v4"/>',
+    pencil: '<path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="m14 7 3 3"/>',
   };
   const icon = (name, cls = "") =>
     `<svg${cls ? ` class="${cls}"` : ""} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ""}</svg>`;
@@ -68,10 +74,11 @@
   window.TRA = { SITE, SERVICES, icon };
 
   const NAV = [
-    { id: "services", label: "Services", href: "services.html" },
-    { id: "process", label: "How It Works", href: "index.html#process" },
-    { id: "about", label: "About", href: "about.html" },
-    { id: "documents", label: "Send Documents", href: "documents.html" },
+    { id: "services", label: "Services", href: "/services" },
+    { id: "process", label: "How It Works", href: "/#process" },
+    { id: "about", label: "About", href: "/about" },
+    { id: "woodworking", label: "Woodworking", href: "/woodworking" },
+    { id: "documents", label: "Send Documents", href: "/documents" },
   ];
 
   const page = document.body.dataset.page || "";
@@ -81,7 +88,7 @@
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <div class="container site-header__inner">
-        <a class="brand" href="index.html" aria-label="${SITE.name} home">
+        <a class="brand" href="/" aria-label="${SITE.name} home">
           <img src="assets/img/logo-horizontal.svg" alt="${SITE.name}" width="221" height="56">
         </a>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
@@ -93,8 +100,8 @@
             ${NAV.map((l) => `<li><a class="nav__link" href="${l.href}"${current(l.id)}>${l.label}</a></li>`).join("")}
           </ul>
           <div class="nav__cta">
-            <a class="nav__phone" href="${SITE.phoneHref}">${icon("phone")}${SITE.phone}</a>
-            <a class="btn btn--sm" href="book.html"${current("book")}>Book a Consultation</a>
+            <a class="nav__phone" href="${SITE.phoneHref}" title="Call ${SITE.phone}">${icon("phone")}<span class="nav__phone-num">${SITE.phone}</span></a>
+            <a class="btn btn--sm" href="/book"${current("book")}>Book a Consultation</a>
           </div>
         </nav>
       </div>
@@ -111,16 +118,17 @@
           <div>
             <h2 class="footer__title">Services</h2>
             <ul class="footer__links">
-              ${SERVICES.map((s) => `<li><a href="services.html#${s.id}">${s.name}</a></li>`).join("")}
+              ${SERVICES.map((s) => `<li><a href="/services#${s.id}">${s.name}</a></li>`).join("")}
+              <li><a href="/woodworking">Custom Woodworking</a></li>
             </ul>
           </div>
           <div>
             <h2 class="footer__title">Company</h2>
             <ul class="footer__links">
-              <li><a href="about.html">About</a></li>
-              <li><a href="index.html#process">How It Works</a></li>
-              <li><a href="index.html#faq">FAQ</a></li>
-              <li><a href="documents.html">Send Documents</a></li>
+              <li><a href="/about">About</a></li>
+              <li><a href="/#process">How It Works</a></li>
+              <li><a href="/#faq">FAQ</a></li>
+              <li><a href="/documents">Send Documents</a></li>
             </ul>
           </div>
           <div>
@@ -135,8 +143,8 @@
         <div class="footer__bottom">
           <span>&copy; ${new Date().getFullYear()} ${SITE.name}. All rights reserved.</span>
           <ul>
-            <li><a href="terms.html">Terms</a></li>
-            <li><a href="privacy.html">Privacy</a></li>
+            <li><a href="/terms">Terms</a></li>
+            <li><a href="/privacy">Privacy</a></li>
           </ul>
         </div>
       </div>

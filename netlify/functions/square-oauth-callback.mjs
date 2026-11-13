@@ -30,12 +30,12 @@ export default async function handler(request) {
     ?.slice("square_oauth_state=".length);
   const [cookieState, signature] = (cookie || "").split(".");
 
-  if (url.searchParams.has("error")) return redirect("/book.html?square=authorization-denied");
+  if (url.searchParams.has("error")) return redirect("/book?square=authorization-denied");
   if (!code || state !== cookieState || !verifyOAuthState(state, signature)) {
-    return redirect("/book.html?square=authorization-failed");
+    return redirect("/book?square=authorization-failed");
   }
   if (!appId() || !process.env.SQUARE_APPLICATION_SECRET) {
-    return redirect("/book.html?square=configuration-error");
+    return redirect("/book?square=configuration-error");
   }
 
   const baseUrl = SQUARE_ENVIRONMENT === "sandbox"
@@ -56,18 +56,18 @@ export default async function handler(request) {
     });
   } catch {
     console.error("Square OAuth token exchange could not reach Square");
-    return redirect("/book.html?square=authorization-failed");
+    return redirect("/book?square=authorization-failed");
   }
 
   const result = await response.json().catch(() => ({}));
   if (!response.ok || !result.access_token || !result.refresh_token || !result.merchant_id) {
     const codes = (result.errors || []).map((error) => error.code).filter(Boolean);
     console.error("Square OAuth token exchange failed", { status: response.status, codes });
-    return redirect("/book.html?square=authorization-failed");
+    return redirect("/book?square=authorization-failed");
   }
   if (process.env.SQUARE_MERCHANT_ID && result.merchant_id !== process.env.SQUARE_MERCHANT_ID) {
     console.error("Square OAuth merchant did not match configured merchant ID");
-    return redirect("/book.html?square=wrong-account");
+    return redirect("/book?square=wrong-account");
   }
 
   try {
@@ -79,8 +79,8 @@ export default async function handler(request) {
     });
   } catch (error) {
     console.error("Square OAuth tokens could not be stored", error?.name || "Error");
-    return redirect("/book.html?square=storage-error");
+    return redirect("/book?square=storage-error");
   }
 
-  return redirect("/book.html?square=connected");
+  return redirect("/book?square=connected");
 }

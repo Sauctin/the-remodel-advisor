@@ -10,6 +10,7 @@ Static site for The Remodel Advisor, Ted's independent remodeling consulting bus
 | `services.html` | Detail for each service, comparison table, scope (what's included and what isn't) |
 | `book.html` | Square Appointments booking flow embedded on the site |
 | `documents.html` | Netlify form with file uploads for estimates, photos, and plans |
+| `woodworking.html` | Custom woodworking: what Ted makes, portfolio, materials, process, FAQ, and the `woodworking-request` Netlify form (thanks page: `woodworking-thanks.html`) |
 | `about.html` | Ted's story, what he brings, project gallery |
 | `terms.html`, `privacy.html` | Draft legal pages |
 | `js/components.js` | Shared header/footer, icons, **site config** (`SITE`, `SERVICES`) |
@@ -23,6 +24,7 @@ Shared pieces are filled in by JS: `<span data-icon="name">` becomes an icon, an
 - [ ] **Square Appointments:** confirm services, prices, payment policy, and service-area options in Square, then test booking from the embedded flow.
 - [ ] **Photos:** every "Photo needed" placeholder (hero, about, services, gallery)
 - [ ] **Reviews:** replace the three "Sample review" cards on the home page with real ones, or remove the section
+- [ ] **Woodworking page:** real photos with wood/size/finish captions, starting prices, deposit, lead times, delivery/shipping, guarantee, joinery, follow-up time (all flagged `.todo` or "Photo needed"); add an email notification for the `woodworking-request` form in Netlify
 - [ ] **Copy flagged `.todo`:** travel radius, Ted's story, psychology background
 - [ ] **Legal:** review `terms.html` and `privacy.html` and set effective dates
 - [ ] **Email:** set `SITE.email` once there's a working address; add it to the Netlify form notifications
