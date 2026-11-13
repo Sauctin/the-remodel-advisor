@@ -385,6 +385,7 @@ strong { font-weight: 600; }
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 6vw, 88px); align-items: center; }
 .split--reverse .split__media { order: 2; }
 .split__media .ph { aspect-ratio: 5 / 4; border-radius: 20px; }
+.split__media .service-photo { display: block; width: 100%; aspect-ratio: 5 / 4; border-radius: 20px; object-fit: cover; }
 @media (max-width: 880px) {
   .split { grid-template-columns: 1fr; }
   .split--reverse .split__media { order: 0; }
