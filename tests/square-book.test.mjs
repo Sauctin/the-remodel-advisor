@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { makeSearchQuery, SERVICES, SquareError } from "../netlify/lib/square.mjs";
 import { validateRequest } from "../netlify/functions/square-book.mjs";
+import { checkServiceArea, milesFromCenter, serviceAreaMessage } from "../netlify/lib/service-area.mjs";
 
 const validRequest = {
   serviceId: "estimate-review",
@@ -50,10 +51,6 @@ test("uses the server-side service price regardless of client input", () => {
 
 test("rejects incomplete or out-of-radius at-home addresses", () => {
   assert.throws(
-    () => validateRequest({ ...validRequest, address: { ...validRequest.address, postalCode: "43001" } }),
-    (error) => error instanceof SquareError && /25 miles of ZIP code 45150/.test(error.message),
-  );
-  assert.throws(
     () => validateRequest({ ...validRequest, address: { ...validRequest.address, postalCode: "" } }),
     (error) => error instanceof SquareError && /complete service address/.test(error.message),
   );
@@ -86,4 +83,28 @@ test("allows video consultations without an at-home address", () => {
   const result = validateRequest({ ...validRequest, locationType: "VIDEO_CONFERENCE", address: undefined });
   assert.equal(result.locationType, "VIDEO_CONFERENCE");
   assert.equal(result.address, null);
+});
+
+const ohioAddress = { address_line_1: "1 Main St", locality: "Milford", administrative_district_level_1: "OH", postal_code: "45150" };
+
+test("measures the street address against the 25-mile radius", async () => {
+  // Downtown Cincinnati is roughly 14 miles from the 45150 center; Columbus is ~85.
+  const near = await checkServiceArea(ohioAddress, { geocode: async () => ({ lat: 39.1031, lon: -84.512 }) });
+  assert.equal(near.method, "address");
+  assert.equal(near.within, true);
+  assert.ok(near.miles > 10 && near.miles < 20);
+  const far = await checkServiceArea(ohioAddress, { geocode: async () => ({ lat: 39.9612, lon: -82.9988 }) });
+  assert.equal(far.within, false);
+  assert.match(serviceAreaMessage(far), /outside the 25-mile at-home area/);
+});
+
+test("falls back to the ZIP list when the address can't be matched", async () => {
+  const inZip = await checkServiceArea(ohioAddress, { geocode: async () => null });
+  assert.deepEqual([inZip.method, inZip.within], ["zip", true]);
+  const outZip = await checkServiceArea({ ...ohioAddress, postal_code: "43001" }, { geocode: async () => { throw new Error("down"); } });
+  assert.deepEqual([outZip.method, outZip.within], ["zip", false]);
+});
+
+test("distance math is sane", () => {
+  assert.equal(milesFromCenter(39.166469, -84.230391), 0);
 });

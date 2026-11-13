@@ -65,8 +65,8 @@
               <h3 id="booking-selection"></h3>
               <fieldset class="field booking-location">
                 <legend>Where should we meet?</legend>
-                <label><input type="radio" name="locationType" value="CUSTOMER_LOCATION" checked> At my location within 25 miles of ZIP code 45150</label>
-                <label><input type="radio" name="locationType" value="VIDEO_CONFERENCE"> By video call</label>
+                <label><input type="radio" name="locationType" value="VIDEO_CONFERENCE" checked> By video call</label>
+                <label><input type="radio" name="locationType" value="CUSTOMER_LOCATION"> In person at my location (within 25 miles of ZIP code 45150)</label>
               </fieldset>
               <div id="service-address" class="form-grid booking-address">
                 <div class="field full"><label for="address-line-1">Street address</label><input id="address-line-1" name="address-line-1" type="text" autocomplete="address-line1" maxlength="120" required></div>
@@ -74,7 +74,8 @@
                 <div class="field"><label for="address-city">City</label><input id="address-city" name="address-city" type="text" autocomplete="address-level2" maxlength="80" required></div>
                 <div class="field"><label for="address-state">State</label><input id="address-state" name="address-state" type="text" autocomplete="address-level1" maxlength="2" pattern="[A-Za-z]{2}" required></div>
                 <div class="field"><label for="address-zip">ZIP code</label><input id="address-zip" name="address-zip" type="text" autocomplete="postal-code" maxlength="10" pattern="[0-9]{5}(-[0-9]{4})?" required></div>
-                <p class="hint full">At-home service eligibility is estimated from your ZIP-code centroid and may need confirmation near the 25-mile boundary.</p>
+                <p id="area-status" class="area-status full" role="status" aria-live="polite" hidden></p>
+                <p class="hint full">We check your address against a 25-mile radius (straight-line distance) of ZIP code 45150. Near the edge? Call (513) 409-1625.</p>
               </div>
               <div class="form-grid">
                 <div class="field"><label for="customer-first-name">First name</label><input id="customer-first-name" name="givenName" type="text" autocomplete="given-name" maxlength="100" required></div>
@@ -158,10 +159,74 @@
       function updateLocationFields() {
         const inPerson = bookingForm.querySelector('input[name="locationType"]:checked').value === "CUSTOMER_LOCATION";
         addressFields.hidden = !inPerson;
+        if (inPerson && typeof checkArea === "function") checkArea();
         for (const input of addressFields.querySelectorAll("input")) {
           input.disabled = !inPerson;
           input.required = inPerson && input.id !== "address-line-2";
         }
+      }
+
+      // ---- At-home service area: check the address before the customer pays ----
+      const areaStatus = document.getElementById("area-status");
+      const areaInputs = ["address-line-1", "address-city", "address-state", "address-zip"].map((id) => document.getElementById(id));
+      let areaResult = null;   // { key, within, message } for the last address checked
+      let areaPending = null;  // in-flight check
+      let areaTimer = null;
+
+      function addressValues() {
+        const [line1, city, state, postalCode] = areaInputs.map((input) => input.value.trim());
+        return { line1, city, state: state.toUpperCase(), postalCode };
+      }
+      function addressKey(a) { return [a.line1, a.city, a.state, a.postalCode].join("|").toLowerCase(); }
+      function addressComplete(a) {
+        return a.line1 && a.city && /^[A-Z]{2}$/.test(a.state) && /^\d{5}(-\d{4})?$/.test(a.postalCode);
+      }
+      function showArea(result) {
+        areaStatus.hidden = !result;
+        if (!result) return;
+        areaStatus.textContent = result.message;
+        areaStatus.className = "area-status full " + (result.within ? "area-status--ok" : "area-status--out");
+      }
+      async function checkArea() {
+        const a = addressValues();
+        if (!addressComplete(a)) { areaResult = null; showArea(null); return null; }
+        const key = addressKey(a);
+        if (areaResult && areaResult.key === key) return areaResult;
+        if (areaPending && areaPending.key === key) return areaPending.promise;
+        areaStatus.hidden = false;
+        areaStatus.className = "area-status full";
+        areaStatus.textContent = "Checking your address…";
+        const promise = (async () => {
+          try {
+            const response = await fetch("/.netlify/functions/square-service-area", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Accept: "application/json" },
+              body: JSON.stringify(a),
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || "Address check failed");
+            if (addressKey(addressValues()) !== key) return null; // address changed meanwhile
+            areaResult = { key, within: result.within, message: result.message };
+            showArea(areaResult);
+            return areaResult;
+          } catch {
+            // Don't block the customer on a lookup hiccup; the booking step re-checks.
+            if (addressKey(addressValues()) === key) showArea(null);
+            return null;
+          } finally {
+            if (areaPending && areaPending.key === key) areaPending = null;
+          }
+        })();
+        areaPending = { key, promise };
+        return promise;
+      }
+      for (const input of areaInputs) {
+        input.addEventListener("input", () => {
+          clearTimeout(areaTimer);
+          if (areaResult && areaResult.key !== addressKey(addressValues())) { areaResult = null; showArea(null); }
+          areaTimer = setTimeout(checkArea, 900);
+        });
+        input.addEventListener("change", () => { clearTimeout(areaTimer); checkArea(); });
       }
 
       async function mountCard() {
@@ -315,6 +380,14 @@
       bookingForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         if (!selectedSlot || !cardMounted || !squareCard || !bookingForm.reportValidity()) return;
+        if (bookingForm.querySelector('input[name="locationType"]:checked').value === "CUSTOMER_LOCATION") {
+          const area = await checkArea();
+          if (area && !area.within) {
+            setStatus(area.message, "error");
+            areaStatus.scrollIntoView({ block: "center" });
+            return;
+          }
+        }
         bookPayButton.disabled = true;
         findTimesButton.disabled = true;
         setStatus("Securing your appointment and processing payment…");

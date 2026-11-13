@@ -538,6 +538,9 @@ strong { font-weight: 600; }
 .booking-location legend { margin-bottom: 6px; font-weight: 600; }
 .booking-location label { display: flex; gap: 10px; align-items: center; }
 .booking-location input { width: 18px; height: 18px; accent-color: var(--green-900); }
+.area-status { margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--paper-2); color: var(--ink-2); font-size: 0.93rem; }
+.area-status--ok { background: var(--green-100); color: var(--green-900); }
+.area-status--out { background: #f8e1dc; color: var(--danger); }
 .booking-card { padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
 .booking-card .hint { margin: 10px 0 0; }
 #card-container { min-height: 50px; }

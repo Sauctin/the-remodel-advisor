@@ -16,3 +16,70 @@ const SERVICE_AREA_ZIPS = new Set(`
 export function isWithinServiceArea(postalCode, state) {
   return ["OH", "KY"].includes(state) && SERVICE_AREA_ZIPS.has(postalCode.slice(0, 5));
 }
+
+// ---------------------------------------------------------------------------
+// Address-level check: geocode the street address (US Census Bureau geocoder,
+// free, no key) and measure straight-line distance from the center of ZIP
+// 45150. Falls back to the ZIP list above when the address can't be matched.
+// ---------------------------------------------------------------------------
+
+// Census 2023 ZCTA internal point for 45150 (Milford, OH).
+export const SERVICE_CENTER = Object.freeze({ lat: 39.166469, lon: -84.230391 });
+export const SERVICE_RADIUS_MILES = 25;
+const CENSUS_GEOCODER = "https://geocoding.geo.census.gov/geocoder/locations/address";
+
+export function milesFromCenter(lat, lon, center = SERVICE_CENTER) {
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat - center.lat);
+  const dLon = toRad(lon - center.lon);
+  const a = Math.sin(dLat / 2) ** 2
+    + Math.cos(toRad(center.lat)) * Math.cos(toRad(lat)) * Math.sin(dLon / 2) ** 2;
+  return 3958.8 * 2 * Math.asin(Math.sqrt(a));
+}
+
+// address uses Square's shape: address_line_1, locality, administrative_district_level_1, postal_code
+export async function geocodeAddress(address, fetchImpl = fetch) {
+  const url = new URL(CENSUS_GEOCODER);
+  url.searchParams.set("street", address.address_line_1);
+  url.searchParams.set("city", address.locality);
+  url.searchParams.set("state", address.administrative_district_level_1);
+  url.searchParams.set("zip", address.postal_code.slice(0, 5));
+  url.searchParams.set("benchmark", "Public_AR_Current");
+  url.searchParams.set("format", "json");
+  const response = await fetchImpl(url, { signal: AbortSignal.timeout(5000) });
+  if (!response.ok) throw new Error(`Geocoder returned ${response.status}`);
+  const match = (await response.json())?.result?.addressMatches?.[0];
+  if (!match?.coordinates) return null;
+  return { lat: Number(match.coordinates.y), lon: Number(match.coordinates.x), matchedAddress: match.matchedAddress };
+}
+
+export async function checkServiceArea(address, { geocode = geocodeAddress } = {}) {
+  let point = null;
+  try {
+    point = await geocode(address);
+  } catch (error) {
+    console.error("Service-area geocoding failed; falling back to ZIP list", error?.name || "Error");
+  }
+  if (point && Number.isFinite(point.lat) && Number.isFinite(point.lon)) {
+    const miles = Math.round(milesFromCenter(point.lat, point.lon) * 10) / 10;
+    return { within: miles <= SERVICE_RADIUS_MILES, miles, method: "address" };
+  }
+  return {
+    within: isWithinServiceArea(address.postal_code, address.administrative_district_level_1),
+    miles: null,
+    method: "zip",
+  };
+}
+
+export function serviceAreaMessage(result) {
+  if (result.method === "address" && result.within) {
+    return `This address is about ${result.miles} miles from ZIP code 45150, within the at-home service area.`;
+  }
+  if (result.method === "address") {
+    return `This address is about ${result.miles} miles from ZIP code 45150, outside the ${SERVICE_RADIUS_MILES}-mile at-home area. Choose a video call, or call (513) 409-1625 to ask.`;
+  }
+  if (result.within) {
+    return "We couldn't pinpoint this street address, but its ZIP code is within the at-home service area.";
+  }
+  return `At-home appointments are limited to within ${SERVICE_RADIUS_MILES} miles of ZIP code 45150. Choose a video call, or call (513) 409-1625 if you're near the edge.`;
+}
