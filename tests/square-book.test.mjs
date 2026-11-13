@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { SquareError } from "../netlify/lib/square.mjs";
+import { makeSearchQuery, SERVICES, SquareError } from "../netlify/lib/square.mjs";
 import { validateRequest } from "../netlify/functions/square-book.mjs";
 
 const validRequest = {
@@ -22,6 +22,17 @@ const validRequest = {
   teamMemberId: "TMABC123",
   serviceVariationVersion: 1,
 };
+
+test("availability search leaves team-member filtering unrestricted", () => {
+  const query = makeSearchQuery(
+    SERVICES["estimate-review"],
+    "2030-01-02T00:00:00.000Z",
+    "2030-01-03T00:00:00.000Z",
+  );
+  assert.deepEqual(query.query.filter.segment_filters, [{
+    service_variation_id: SERVICES["estimate-review"].variationId,
+  }]);
+});
 
 test("validates and normalizes a customer-location booking", () => {
   const result = validateRequest(validRequest);

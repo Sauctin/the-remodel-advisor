@@ -233,7 +233,6 @@ export function makeSearchQuery(service, startAt, endAt) {
         location_id: SQUARE_LOCATION_ID,
         segment_filters: [{
           service_variation_id: service.variationId,
-          team_member_id_filter: { any: true },
         }],
       },
     },
