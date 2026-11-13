@@ -8,7 +8,7 @@ Static site for The Remodel Advisor, Ted's independent remodeling consulting bus
 | --- | --- |
 | `index.html` | Home: hero, services, how it works, about teaser, reviews, FAQ |
 | `services.html` | Detail for each service, comparison table, scope (what's included and what isn't) |
-| `book.html` | Square Appointments booking flow embedded on the site |
+| `book.html` | On-site booking and payment through Square (see below) |
 | `documents.html` | Netlify form with file uploads for estimates, photos, and plans |
 | `woodworking.html` | Custom woodworking: what Ted makes, portfolio, materials, process, FAQ, and the `woodworking-request` Netlify form (thanks page: `woodworking-thanks.html`) |
 | `about.html` | Ted's story, what he brings, project gallery |
@@ -21,7 +21,7 @@ Shared pieces are filled in by JS: `<span data-icon="name">` becomes an icon, an
 
 ## Before launch
 
-- [ ] **Square Appointments:** confirm services, prices, payment policy, and service-area options in Square, then test booking from the embedded flow.
+- [ ] **Square booking:** Ted connects his account (setup link below), then makes and refunds one real test booking
 - [ ] **Photos:** every "Photo needed" placeholder (hero, about, services, gallery)
 - [ ] **Reviews:** replace the three "Sample review" cards on the home page with real ones, or remove the section
 - [ ] **Woodworking page:** real photos with wood/size/finish captions, starting prices, deposit, lead times, delivery/shipping, guarantee, joinery, follow-up time (all flagged `.todo` or "Photo needed"); add an email notification for the `woodworking-request` form in Netlify
@@ -31,11 +31,22 @@ Shared pieces are filled in by JS: `<span data-icon="name">` becomes an icon, an
 - [x] **Domain:** askremodel.com (Cloudflare Registrar; A `@` → 75.2.60.5 and CNAME `www` → the-remodel-advisor.netlify.app, both DNS-only/grey cloud)
 - [ ] **Indexing:** remove the `X-Robots-Tag` block in `netlify.toml` and change `robots.txt` to allow crawling
 
-### Square Appointments booking
+### Square booking (on-site)
 
-The booking page uses Square's official Appointments embed, which lets customers select a service and book through Square without a separate Netlify booking integration. The embed code is configured for The Remodel Advisor's Square location. To manage or regenerate it, open Square Dashboard → Appointments → Online booking → Channels → Add your booking flow to an existing site → Get started → Get embed code.
+`book.html` runs the whole booking on askremodel.com: service, date and time, customer details, and Square's secure card field (Web Payments SDK). Netlify functions in `netlify/functions/` talk to Square:
 
-Keep the Square booking page and its booking policies active. Confirm service prices, prepayment/tax treatment, and whether in-person or video appointments are offered in Square Appointments; changes there apply to the embedded flow. The page also provides a direct booking link if the embed cannot load.
+| Function | Job |
+| --- | --- |
+| `square-config` | Tells the page whether Square is connected (`ready`) |
+| `square-availability` | Open times for a service on a date |
+| `square-book` | Creates the customer and appointment, charges the card, cancels the appointment if the charge fails |
+| `square-oauth-start` / `square-oauth-callback` | One-time connection to Ted's Square account (OAuth, buyer-level scopes, so it works on Square Appointments Free) |
+
+Netlify environment variables: `SQUARE_ENVIRONMENT=production`, `SQUARE_APPLICATION_ID`, `SQUARE_APPLICATION_SECRET`, `SQUARE_LOCATION_ID`, `SQUARE_OAUTH_SETUP_KEY` (password for the connect link, username `square-admin`), and optionally `SQUARE_MERCHANT_ID` to lock the connection to Ted's account. Tokens live in Netlify Blobs (`square-booking-production`) and refresh automatically.
+
+To connect or reconnect: open `/.netlify/functions/square-oauth-start`, sign in with `square-admin` and the setup key, then approve in Square. You land on `/book?square=connected`.
+
+If Square isn't connected, the page falls back to a "Continue to Square" button for the hosted booking page (links in `SITE.booking`). Prices are hard-coded in both `js/components.js` and `netlify/lib/square.mjs`, and must match Square.
 
 ## Local preview
 

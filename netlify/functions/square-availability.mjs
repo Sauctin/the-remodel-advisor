@@ -22,11 +22,14 @@ export default async function handler(request) {
   }
 
   try {
+    // Square wants a future window of 24 hours to 32 days, so never start before now.
     const center = Date.parse(`${date}T12:00:00Z`);
+    const start = Math.max(center - 24 * 60 * 60 * 1000, Date.now() + 60 * 1000);
+    const end = Math.max(center + 36 * 60 * 60 * 1000, start + 24 * 60 * 60 * 1000);
     const availabilities = await findAvailability(
       service,
-      new Date(center - 24 * 60 * 60 * 1000).toISOString(),
-      new Date(center + 36 * 60 * 60 * 1000).toISOString(),
+      new Date(start).toISOString(),
+      new Date(end).toISOString(),
     );
     const slots = availabilities
       .filter((availability) => formatLocalDate(availability.start_at, SQUARE_TIME_ZONE) === date)
