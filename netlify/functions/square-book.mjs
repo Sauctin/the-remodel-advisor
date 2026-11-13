@@ -112,10 +112,13 @@ export default async function handler(request) {
       return jsonResponse(409, { error: "That time no longer meets the 24-hour booking notice. Choose another time." });
     }
 
+    // Square only accepts search windows of 24 hours to 32 days, so search the
+    // day starting just before the chosen time and match that exact slot below.
+    const windowStart = Date.parse(input.startAt) - 60 * 1000;
     const availabilities = await findAvailability(
       input.service,
-      new Date(Date.parse(input.startAt) - 60 * 1000).toISOString(),
-      new Date(Date.parse(input.startAt) + 60 * 1000).toISOString(),
+      new Date(windowStart).toISOString(),
+      new Date(windowStart + 24 * 60 * 60 * 1000).toISOString(),
     );
     const slot = availabilities.find((availability) =>
       Date.parse(availability.start_at) === Date.parse(input.startAt)
@@ -159,7 +162,9 @@ export default async function handler(request) {
         booking: {
           start_at: slot.start_at,
           location_id: SQUARE_LOCATION_ID,
-          location_type: input.locationType,
+          // Square's booking location types are business, customer, or phone (no video),
+          // so video calls leave it unset; the customer note records "video consultation".
+          ...(input.locationType === "CUSTOMER_LOCATION" ? { location_type: "CUSTOMER_LOCATION" } : {}),
           ...(input.address ? { address: input.address } : {}),
           customer_id: customerResult.customer.id,
           customer_note: customerNote,
