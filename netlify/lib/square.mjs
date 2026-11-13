@@ -6,27 +6,28 @@ export const SQUARE_LOCATION_ID = process.env.SQUARE_LOCATION_ID || "";
 export const SQUARE_TIME_ZONE = process.env.SQUARE_TIME_ZONE || "America/New_York";
 export const SQUARE_ENVIRONMENT = process.env.SQUARE_ENVIRONMENT === "production" ? "production" : "sandbox";
 
+// variationId is the Square service *variation* ID (not the item ID in booking-page links).
 export const SERVICES = Object.freeze({
   "estimate-review": {
     name: "Estimate Review",
     priceCents: 5000,
     durationMinutes: 60,
     variationId: process.env.SQUARE_ESTIMATE_REVIEW_VARIATION_ID
-      || (SQUARE_ENVIRONMENT === "production" ? "ZQE4R7GQLSG7QZUCOTPICHGL" : ""),
+      || (SQUARE_ENVIRONMENT === "production" ? "AN43VKGAU4BR4Z5EAWI7Y3D7" : ""),
   },
   "material-selection": {
     name: "Material Selection",
     priceCents: 4000,
     durationMinutes: 60,
     variationId: process.env.SQUARE_MATERIAL_SELECTION_VARIATION_ID
-      || (SQUARE_ENVIRONMENT === "production" ? "DEZVENR2UHZBZ4ZQ44WPX7ZS" : ""),
+      || (SQUARE_ENVIRONMENT === "production" ? "2NTB6Z25MA56UA4WGQTKVVP7" : ""),
   },
   "renovation-consultation": {
     name: "Renovation Consultation",
     priceCents: 10000,
     durationMinutes: 120,
     variationId: process.env.SQUARE_RENOVATION_CONSULTATION_VARIATION_ID
-      || (SQUARE_ENVIRONMENT === "production" ? "CCRPQ3SXFOGDSHMAY3UP2DNQ" : ""),
+      || (SQUARE_ENVIRONMENT === "production" ? "6Q2YO3ARYLS6UVUTHOL7B6UH" : ""),
   },
 });
 
