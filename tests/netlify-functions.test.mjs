@@ -31,12 +31,20 @@ test("booking endpoint rejects cross-origin requests", async () => {
 
 test("availability errors expose only Square error codes for diagnosis", async () => {
   const response = availabilityErrorResponse(
-    new SquareError("Square could not complete the request. Please try again.", 404, ["NOT_FOUND"], false, ["location_id"]),
+    new SquareError(
+      "Square could not complete the request. Please try again.",
+      404,
+      ["NOT_FOUND"],
+      false,
+      ["query.filter.segment_filters[0].service_variation_id"],
+    ),
+    "service-variation-id",
   );
   assert.equal(response.status, 404);
   assert.deepEqual(await response.json(), {
     error: "Square could not complete the request. Please try again.",
     squareErrorCodes: ["NOT_FOUND"],
-    squareErrorFields: ["location_id"],
+    squareErrorFields: ["query.filter.segment_filters[0].service_variation_id"],
+    squareServiceVariationId: "service-variation-id",
   });
 });

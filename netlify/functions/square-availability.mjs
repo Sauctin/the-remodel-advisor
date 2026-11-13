@@ -10,7 +10,7 @@ import {
   validIsoDate,
 } from "../lib/square.mjs";
 
-export function availabilityErrorResponse(error) {
+export function availabilityErrorResponse(error, serviceVariationId) {
   const result = publicError(error);
   return jsonResponse(result.statusCode, {
     error: result.message,
@@ -20,6 +20,7 @@ export function availabilityErrorResponse(error) {
     ...(error instanceof SquareError && error.fields.length
       ? { squareErrorFields: error.fields }
       : {}),
+    ...(error instanceof SquareError ? { squareServiceVariationId: serviceVariationId } : {}),
   });
 }
 
@@ -57,6 +58,6 @@ export default async function handler(request) {
       .sort((a, b) => Date.parse(a.startAt) - Date.parse(b.startAt));
     return jsonResponse(200, { date, timeZone: SQUARE_TIME_ZONE, slots });
   } catch (error) {
-    return availabilityErrorResponse(error);
+    return availabilityErrorResponse(error, service.variationId);
   }
 }
